@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <unistd.h>
 
 class SockClient {
 private:
@@ -19,6 +20,7 @@ private:
 public:
     int fd() const;
     SockClient(const char *svrip, int port_number);
+    ~SockClient();
     ssize_t send(const char* buff,size_t len);
     ssize_t recv(char* buff,size_t size) const;
 };

@@ -22,7 +22,6 @@ Tun::Tun() {
         exit(-1);
     }
 
-
     // 3. use socket to connect the tun
     ctlSock = new IoctlIfSock(ifr);
 }

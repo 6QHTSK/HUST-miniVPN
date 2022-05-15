@@ -9,18 +9,20 @@
 #include <cstring>
 #include <cstdlib>
 #include "../Tun/Tun.h"
+#include "../Epoll/Epoll.h"
 #include "SockClient.h"
 
 class Client {
 private:
     const int buff_size = 2000;
-    Tun tun;
-    SockClient sock;
+    Tun* tun;
+    SockClient* sock;
 
     void tunSelected();
     void socketSelected();
 
 public:
+    ~Client();
     Client(const char* peerAddr, int port_number);
     [[noreturn]] void listen();
 };

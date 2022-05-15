@@ -29,6 +29,8 @@ SockServer::SockServer(int port_number) {
         exit(-1);
     }
 
+    listen(sockfd,1);
+
     // Wait for the VPN client to "connect".
     bzero(buff, 100);
     socklen_t peerAddrLen = sizeof(struct sockaddr_in);
@@ -38,10 +40,14 @@ SockServer::SockServer(int port_number) {
     printf("Accept connect from client %s: %s\n", inet_ntoa(peerAddr.sin_addr), buff);
 }
 
-ssize_t SockServer::send(const char *buff, size_t len) {
+ssize_t SockServer::sockSend(const char *buff, size_t len) {
     return sendto(sockfd, buff, len, 0, (struct sockaddr *) &peerAddr, sizeof(peerAddr));
 }
 
-ssize_t SockServer::recv(char *buff, size_t size) const {
+ssize_t SockServer::sockRecv(char *buff, size_t size) const {
     return recvfrom(sockfd, buff, size, 0, nullptr, nullptr);
+}
+
+SockServer::~SockServer() {
+    close(sockfd);
 }

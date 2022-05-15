@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
@@ -18,8 +19,9 @@ class SockServer {
     public:
         int fd() const;
         explicit SockServer(int port_number);
-        ssize_t send(const char* buff,size_t len);
-        ssize_t recv(char* buff,size_t size) const;
+        ssize_t sockSend(const char* buff, size_t len);
+        ssize_t sockRecv(char* buff, size_t size) const;
+        ~SockServer();
 };
 
 

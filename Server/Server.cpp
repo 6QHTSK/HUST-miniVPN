@@ -68,7 +68,8 @@ Subnets* initSubNet(){
 
 Server::Server(int port_number){
     subnets = initSubNet();
-    tun.up("192.168.53.1","255.255.255.0");
+    tun = new Tun;
+    tun->up("192.168.53.1","255.255.255.0");
     sock = new SockServer(port_number);
 }
 
@@ -78,8 +79,8 @@ void Server::tunSelected() {
     printf("Got a packet from TUN\n");
 
     bzero(buff, buff_size);
-    auto len = tun.recv(buff,buff_size);
-    sock->send(buff,len);
+    auto len = tun->recv(buff,buff_size);
+    sock->sockSend(buff, len);
 }
 
 void Server::socketSelected() {
@@ -88,24 +89,37 @@ void Server::socketSelected() {
     printf("Got a packet from the tunnel\n");
 
     bzero(buff, buff_size);
-    auto len = sock->recv(buff, buff_size);
-    tun.send(buff,len);
+    auto len = sock->sockRecv(buff, buff_size);
+    if(len == 0){
+        printf("Client Stop the tunnel!\n");
+        exit(0);
+    }
+    tun->send(buff,len);
 }
 
 void Server::listen() {
+    Epoll epoll;
+    epoll.add(sock->fd());
+    epoll.add(tun->fd());
     while (true) {
-        fd_set readFDSet;
-
-        FD_ZERO(&readFDSet);
-        FD_SET(sock->fd(), &readFDSet);
-        FD_SET(tun.fd(), &readFDSet);
-        select(FD_SETSIZE, &readFDSet, nullptr, nullptr, nullptr);
-
-        if (FD_ISSET(tun.fd(), &readFDSet))
-            tunSelected();
-        if (FD_ISSET(sock->fd(), &readFDSet))
-            socketSelected();
+        int eventCnt = epoll.wait();
+        for (int i=0;i<eventCnt;i++){
+            int eventfd = epoll.events[i].data.fd;
+            if(eventfd == sock->fd())
+                socketSelected();
+            else if(eventfd == tun->fd())
+                tunSelected();
+        }
     }
 }
 
+Server::~Server() {
+    delete tun;
+    delete sock;
+    delete subnets;
+}
 
+
+Subnets::~Subnets() {
+    delete next;
+}

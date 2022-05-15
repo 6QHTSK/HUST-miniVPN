@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ifaddrs.h>
+#include "../Epoll/Epoll.h"
 #include "../Tun/Tun.h"
 #include "SockServer.h"
 
@@ -17,14 +18,13 @@ public:
     in_addr IP;
     in_addr netmask;
     struct Subnets* next;
+    ~Subnets();
 };
-
-
 
 class Server {
 private:
     const int buff_size = 2000;
-    Tun tun;
+    Tun* tun;
     SockServer* sock;
     Subnets* subnets;
 
@@ -32,6 +32,7 @@ private:
     void socketSelected();
 
 public:
+    ~Server();
     explicit Server(int port_number);
     [[noreturn]] void listen();
 };

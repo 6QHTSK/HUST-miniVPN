@@ -10,8 +10,8 @@ find_package(OpenSSL REQUIRED)
 #    message(STATUS "OpenSSL Found!")
 #endif()
 
-add_executable(tlsclient tlsclient.cpp Client/Client.cpp Tun/Tun.cpp Tun/IoctlIfSock.cpp Client/SockClient.cpp)
-add_executable(tlsserver tlsserver.cpp Server/Server.cpp Tun/Tun.cpp Tun/IoctlIfSock.cpp Server/SockServer.cpp)
+add_executable(tlsclient tlsclient.cpp Client/Client.cpp Tun/Tun.cpp Tun/IoctlIfSock.cpp Client/SockClient.cpp Epoll/Epoll.cpp Epoll/Epoll.h)
+add_executable(tlsserver tlsserver.cpp Server/Server.cpp Tun/Tun.cpp Tun/IoctlIfSock.cpp Server/SockServer.cpp Epoll/Epoll.cpp Epoll/Epoll.h)
 
 include_directories(${OPENSSL_INCLUDE_DIRS})
 set(OPENSSL_USE_STATIC_LIBS TRUE)

@@ -4,9 +4,11 @@
 
 #include "Client.h"
 
-Client::Client(const char *peerAddr, int port_number = 4443): sock(peerAddr, port_number){
-    tun.up("192.168.53.5","255.255.255.0");
-    tun.addRouteTo("192.168.60.0","255.255.255.0");
+Client::Client(const char *peerAddr, int port_number = 4443){
+    tun = new Tun;
+    tun->up("192.168.53.5","255.255.255.0");
+    tun->addRouteTo("192.168.60.0","255.255.255.0");
+    sock = new SockClient(peerAddr, port_number);
 }
 
 void Client::tunSelected() {
@@ -16,8 +18,8 @@ void Client::tunSelected() {
     printf("Got a packet from TUN\n");
 
     bzero(buff, buff_size);
-    len = tun.recv(buff,buff_size);
-    sock.send(buff,len);
+    len = tun->recv(buff,buff_size);
+    sock->send(buff,len);
 }
 
 void Client::socketSelected(){
@@ -27,22 +29,27 @@ void Client::socketSelected(){
     printf("Got a packet from the tunnel\n");
 
     bzero(buff, buff_size);
-    len = sock.recv(buff,buff_size);
-    tun.send(buff,len);
+    len = sock->recv(buff,buff_size);
+    tun->send(buff,len);
 }
 
 [[noreturn]] void Client::listen() {
+    Epoll epoll;
+    epoll.add(sock->fd());
+    epoll.add(tun->fd());
     while (true) {
-        fd_set readFDSet;
-
-        FD_ZERO(&readFDSet);
-        FD_SET(sock.fd(), &readFDSet);
-        FD_SET(tun.fd(), &readFDSet);
-        select(FD_SETSIZE, &readFDSet, nullptr, nullptr, nullptr);
-
-        if (FD_ISSET(tun.fd(), &readFDSet))
-            tunSelected();
-        if (FD_ISSET(sock.fd(), &readFDSet))
-            socketSelected();
+       int eventCnt = epoll.wait();
+       for(int i=0;i<eventCnt;i++){
+           int eventfd = epoll.events[i].data.fd;
+           if(eventfd == sock->fd())
+               socketSelected();
+           else if(eventfd == tun->fd())
+               tunSelected();
+       }
     }
+}
+
+Client::~Client() {
+    delete tun;
+    delete sock;
 }

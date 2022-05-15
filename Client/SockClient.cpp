@@ -33,3 +33,7 @@ ssize_t SockClient::recv(char *buff, size_t size) const {
 int SockClient::fd() const {
     return sockfd;
 }
+
+SockClient::~SockClient() {
+    close(sockfd);
+}
