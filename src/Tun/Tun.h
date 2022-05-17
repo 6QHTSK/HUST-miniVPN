@@ -21,14 +21,13 @@
 class Tun {
 private:
     int tunfd;
-    IoctlIfSock* ctlSock;
+    IoctlIfSock* ctlSock = nullptr;
 public:
     Tun();
     ~Tun();
     int fd() const;
-    const char* TunIfName();
-    void up(const char *runIP, const char *netmask);
-    void addRouteTo(const char* destIP, const char* netmask);
+    void init(in_addr runIP, in_addr netmask);
+    void addRouteTo(in_addr destIP, in_addr netmask);
     ssize_t send(const char* buff,size_t len) const;
     ssize_t recv(char* buff, size_t size) const;
 };

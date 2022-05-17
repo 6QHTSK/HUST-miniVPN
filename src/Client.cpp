@@ -4,11 +4,21 @@
 
 #include "Client.h"
 
-Client::Client(const char *peerAddr, int port_number = 4443){
+void Client::init(const char *peerAddr, int port_number = 4443){
+    sock = new SockClient();
     tun = new Tun;
-    tun->up("192.168.53.5","255.255.255.0");
-    tun->addRouteTo("192.168.60.0","255.255.255.0");
-    sock = new SockClient(peerAddr, port_number);
+    sock->init(peerAddr, port_number);
+}
+
+bool Client::verify(){
+    const char* verify = "hello";
+    sock->sockSend(verify,sizeof(verify));
+    VpnInitPacket initPacket{};
+    sock->sockRecv((char*)&initPacket,sizeof(vpnInitPacket));
+    tun->init(initPacket.virtualIP, initPacket.mask);
+    for(int i=0;i<initPacket.routeCnt;i++)
+        tun->addRouteTo(initPacket.routes[i].IP,initPacket.routes[i].netmask);
+    return true;
 }
 
 void Client::tunSelected() {
@@ -19,7 +29,7 @@ void Client::tunSelected() {
 
     bzero(buff, buff_size);
     len = tun->recv(buff,buff_size);
-    sock->send(buff,len);
+    sock->sockSend(buff, len);
 }
 
 void Client::socketSelected(){
@@ -29,7 +39,11 @@ void Client::socketSelected(){
     printf("Got a packet from the tunnel\n");
 
     bzero(buff, buff_size);
-    len = sock->recv(buff,buff_size);
+    len = sock->sockRecv(buff, buff_size);
+    if(len == 0){
+        printf("Server Stop the tunnel!\n");
+        exit(0);
+    }
     tun->send(buff,len);
 }
 

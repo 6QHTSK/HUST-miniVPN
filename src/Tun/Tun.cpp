@@ -4,7 +4,10 @@
 
 #include "Tun.h"
 
-Tun::Tun() {
+// NOT INIT
+Tun::Tun():tunfd(-1) {}
+
+void Tun::init(in_addr runIP, in_addr netmask) {
     struct ifreq ifr{};
     memset(&ifr, 0, sizeof(ifr));
 
@@ -24,9 +27,10 @@ Tun::Tun() {
 
     // 3. use socket to connect the tun
     ctlSock = new IoctlIfSock(ifr);
-}
+    ctlSock->init();
 
-void Tun::up(const char *runIP, const char *netmask) {
+    printf("TUN run at %s ",inet_ntoa(runIP));
+    printf("(netmask: %s)\n", inet_ntoa(netmask));
     // 4. Assign IP Address
     ctlSock->adapterAssignIp(runIP);
     // 5. Assign NetMask
@@ -55,11 +59,9 @@ Tun::~Tun() {
     delete ctlSock;
 }
 
-void Tun::addRouteTo(const char *destIP, const char *netmask) {
+void Tun::addRouteTo(in_addr destIP, in_addr netmask) {
+    printf("add route to %s ",inet_ntoa(destIP));
+    printf("(netmask: %s)\n", inet_ntoa(netmask));
     ctlSock->adapterAddRouteTo(destIP,netmask);
-}
-
-const char *Tun::TunIfName() {
-    return ctlSock->getIfName();
 }
 

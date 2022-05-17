@@ -24,11 +24,12 @@ private:
 public:
     explicit IoctlIfSock(struct ifreq ifr);
     ~IoctlIfSock();
+    void init();
     char *getIfName();
-    void adapterAssignIp(const char* runIP);
-    void adapterAssignNetmask(const char* netmask);
     void adapterActivate();
-    void adapterAddRouteTo(const char *IP, const char *mask);
+    void adapterAssignIp(in_addr runIP);
+    void adapterAssignNetmask(in_addr netmask);
+    void adapterAddRouteTo(in_addr IP, in_addr mask);
 };
 
 

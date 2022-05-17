@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <cstdio>
 #include <cstdlib>
-
 class Epoll {
 private:
     int epollFd;

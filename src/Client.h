@@ -8,9 +8,10 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include "../Tun/Tun.h"
-#include "../Epoll/Epoll.h"
-#include "SockClient.h"
+#include "Tun/Tun.h"
+#include "Epoll/Epoll.h"
+#include "Sock/SockClient.h"
+#include "Model/Packet.h"
 
 class Client {
 private:
@@ -23,7 +24,8 @@ private:
 
 public:
     ~Client();
-    Client(const char* peerAddr, int port_number);
+    void init(const char *peerAddr, int port_number);
+    bool verify();
     [[noreturn]] void listen();
 };
 
