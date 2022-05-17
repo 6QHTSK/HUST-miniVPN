@@ -2,11 +2,11 @@
 // Created by csepsk on 2022/5/15.
 //
 
-#include "IoctlIfSock.h"
+#include "TunController.h"
 
-IoctlIfSock::IoctlIfSock(struct ifreq ifr):ifr(ifr),sockfd(-1){}
+TunController::TunController(struct ifreq ifr): ifr(ifr), sockfd(-1){}
 
-void IoctlIfSock::init(){
+void TunController::init(){
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd == -1){
         printf("Create ioctlSock failed! (%d: %s)\n", errno, strerror(errno));
@@ -14,7 +14,7 @@ void IoctlIfSock::init(){
     }
 }
 
-void IoctlIfSock::adapterAssignIp(in_addr runIP){
+void TunController::adapterAssignIp(in_addr runIP){
     struct sockaddr_in addr{};
     bzero(&addr,sizeof(addr));
     addr.sin_family = AF_INET;
@@ -28,16 +28,7 @@ void IoctlIfSock::adapterAssignIp(in_addr runIP){
     }
 }
 
-void IoctlIfSock::adapterAssignIp(const char* runIP) {
-    struct in_addr addr{};
-    if(inet_aton(runIP,&addr) < 0){
-        printf("Cannot parse runIP");
-        exit(-1);
-    }
-    adapterAssignIp(addr);
-}
-
-void IoctlIfSock::adapterAssignNetmask(in_addr netmask) {
+void TunController::adapterAssignNetmask(in_addr netmask) {
     struct sockaddr_in addr{};
     bzero(&addr,sizeof(addr));
     addr.sin_family = AF_INET;
@@ -51,16 +42,7 @@ void IoctlIfSock::adapterAssignNetmask(in_addr netmask) {
     }
 }
 
-void IoctlIfSock::adapterAssignNetmask(const char* netmask) {
-    struct in_addr addr{};
-    if(inet_aton(netmask,&addr) < 0){
-        printf("Cannot parse netmask");
-        exit(-1);
-    }
-    adapterAssignNetmask(addr);
-}
-
-void IoctlIfSock::adapterActivate() {
+void TunController::adapterActivate() {
     int ret = ioctl(sockfd,SIOCGIFFLAGS,&ifr);
     if(ret == -1){
         printf("Get Flag from TUN interface failed! (%d: %s)\n", errno, strerror(errno));
@@ -75,7 +57,7 @@ void IoctlIfSock::adapterActivate() {
     }
 }
 
-void IoctlIfSock::adapterAddRouteTo(in_addr IP, in_addr mask){
+void TunController::adapterAddRouteTo(in_addr IP, in_addr mask){
     struct sockaddr_in s_addr{};
     bzero(&s_addr,sizeof(s_addr));
     s_addr.sin_family = AF_INET;
@@ -99,24 +81,10 @@ void IoctlIfSock::adapterAddRouteTo(in_addr IP, in_addr mask){
     }
 }
 
-void IoctlIfSock::adapterAddRouteTo(const char *IP, const char *mask) {
-    struct in_addr s_addr = {};
-    struct in_addr s_mask = {};
-    if(inet_aton(IP, &s_addr) < 0){
-        printf( "addRoute:  cannot parse netAddr\n" );
-        exit(-1);
-    }
-    if(inet_aton(mask,&s_mask) < 0){
-        printf( "addRoute:  cannot parse mask\n" );
-        exit(-1);
-    }
-    adapterAddRouteTo(s_addr,s_mask);
-}
-
-IoctlIfSock::~IoctlIfSock() {
+TunController::~TunController() {
     close(sockfd);
 }
 
-char *IoctlIfSock::getIfName() {
+char *TunController::getIfName() {
     return ifr.ifr_name;
 }

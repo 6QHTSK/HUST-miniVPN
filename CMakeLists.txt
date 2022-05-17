@@ -10,12 +10,12 @@ find_package(OpenSSL REQUIRED)
 #    message(STATUS "OpenSSL Found!")
 #endif()
 
-add_executable(tlsclient tlsclient.cpp src/Client.cpp src/Tun/Tun.cpp src/Tun/IoctlIfSock.cpp src/Sock/SockBase.cpp src/Sock/SockClient.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
-add_executable(tlsserver tlsserver.cpp src/Server.cpp src/Tun/Tun.cpp src/Tun/IoctlIfSock.cpp src/Sock/SockBase.cpp src/Sock/SockServer.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
+add_executable(tlsclient tlsclient.cpp src/Client.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Sock/SockBase.cpp src/Sock/SockClient.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
+add_executable(tlsserver tlsserver.cpp src/Server.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Sock/SockBase.cpp src/Sock/SockServer.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
 
 include_directories(${OPENSSL_INCLUDE_DIRS})
 set(OPENSSL_USE_STATIC_LIBS TRUE)
-set(DEP_LIBS OpenSSL::Crypto OpenSSL::SSL)
+set(DEP_LIBS OpenSSL::Crypto OpenSSL::SSL crypt)
 
 target_link_libraries(tlsclient ${DEP_LIBS})
 target_link_libraries(tlsserver ${DEP_LIBS})

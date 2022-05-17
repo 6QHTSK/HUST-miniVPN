@@ -19,5 +19,16 @@ typedef struct vpnInitPacket{
     Subnet routes[256];
 }VpnInitPacket;
 
+typedef struct verifyPacket{
+    uint8_t usernameLen;
+    uint8_t passwordLen;
+    char verifyInfo[128];   // max length 128
+    const char* username() const{
+        return verifyInfo;
+    }
+    const char* password() const{
+        return verifyInfo + usernameLen;
+    }
+}VerifyPacket;
 
 #endif //MINIVPN_PACKET_H

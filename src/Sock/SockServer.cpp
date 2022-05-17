@@ -24,7 +24,7 @@ void SockServer::init(int port_number) {
         printf("Listen port failed! (%d: %s)\n", errno, strerror(errno));
         exit(-1);
     }
-    printf("Listening for handshark\n", errno, strerror(errno));
+    printf("TLS服务器已启动，通过下述IP地址连接：\n");
 }
 
 SockConnection* SockServer::sockAccept() const {
@@ -39,10 +39,10 @@ void SockConnection::init(int listenfd) {
     socklen_t peerAddrLen = sizeof( peerAddr );
     sockfd = accept(listenfd, ( struct sockaddr* )&peerAddr, &peerAddrLen );
     if(sockfd == -1){
-        printf("Cannot accept connection (%d:%s)\n",errno, strerror(errno));
+        printf("无法接受连接 (%d:%s)\n",errno, strerror(errno));
         exit(-1);
     }
     status = TCP_ESTAB;
-    printf("Accept Connection From %s\n",inet_ntoa( peerAddr.sin_addr ));
+    printf("TLS客户端 %s 开始连接\n",inet_ntoa( peerAddr.sin_addr ));
 }
 

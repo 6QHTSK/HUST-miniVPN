@@ -2,8 +2,8 @@
 // Created by csepsk on 2022/5/15.
 //
 
-#ifndef MINIVPN_IOCTLIFSOCK_H
-#define MINIVPN_IOCTLIFSOCK_H
+#ifndef MINIVPN_TUNCONTROLLER_H
+#define MINIVPN_TUNCONTROLLER_H
 
 #include <arpa/inet.h>
 #include <linux/if.h>
@@ -17,13 +17,13 @@
 #include <cstdio>
 
 // Control Socket to TUN Device
-class IoctlIfSock {
+class TunController {
 private:
     int sockfd;
     struct ifreq ifr;
 public:
-    explicit IoctlIfSock(struct ifreq ifr);
-    ~IoctlIfSock();
+    explicit TunController(struct ifreq ifr);
+    ~TunController();
     void init();
     char *getIfName();
     void adapterActivate();
@@ -33,4 +33,4 @@ public:
 };
 
 
-#endif //MINIVPN_IOCTLIFSOCK_H
+#endif //MINIVPN_TUNCONTROLLER_H

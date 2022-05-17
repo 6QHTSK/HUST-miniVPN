@@ -26,11 +26,9 @@ void Tun::init(in_addr runIP, in_addr netmask) {
     }
 
     // 3. use socket to connect the tun
-    ctlSock = new IoctlIfSock(ifr);
+    ctlSock = new TunController(ifr);
     ctlSock->init();
 
-    printf("TUN run at %s ",inet_ntoa(runIP));
-    printf("(netmask: %s)\n", inet_ntoa(netmask));
     // 4. Assign IP Address
     ctlSock->adapterAssignIp(runIP);
     // 5. Assign NetMask
@@ -38,7 +36,9 @@ void Tun::init(in_addr runIP, in_addr netmask) {
     // 6. Run TUN Device
     ctlSock->adapterActivate();
 
-    printf("Setup TUN interface(%s) success!\n",ctlSock->getIfName());
+    printf("TLS虚拟网卡(%s)已就绪，",ctlSock->getIfName());
+    printf("IP地址：%s，",inet_ntoa(runIP));
+    printf("子网掩码：%s\n", inet_ntoa(netmask));
 }
 
 
@@ -60,8 +60,6 @@ Tun::~Tun() {
 }
 
 void Tun::addRouteTo(in_addr destIP, in_addr netmask) {
-    printf("add route to %s ",inet_ntoa(destIP));
-    printf("(netmask: %s)\n", inet_ntoa(netmask));
     ctlSock->adapterAddRouteTo(destIP,netmask);
 }
 

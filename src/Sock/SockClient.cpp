@@ -15,8 +15,8 @@ void SockClient::init(const char *svrip, int port_number){
 
     auto connectVal = connect(sockfd,(struct sockaddr*)&peerAddr,sizeof(peerAddr));
     if (connectVal == -1){
-        printf("Connect to Server failed! (%d: %s)\n", errno, strerror(errno));
+        printf("连接到 TLSServer 失败 (%d: %s)\n", errno, strerror(errno));
         exit(-1);
     }
-    printf("Connect to Server %s\n", inet_ntoa(peerAddr.sin_addr));
+    printf("已连接到 TLSServer %s\n", inet_ntoa(peerAddr.sin_addr));
 }

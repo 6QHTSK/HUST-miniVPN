@@ -16,12 +16,12 @@
 #include <linux/route.h>
 #include <sys/ioctl.h>
 #include <cstdlib>
-#include "IoctlIfSock.h"
+#include "TunController.h"
 
 class Tun {
 private:
     int tunfd;
-    IoctlIfSock* ctlSock = nullptr;
+    TunController* ctlSock = nullptr;
 public:
     Tun();
     ~Tun();

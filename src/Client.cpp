@@ -10,14 +10,28 @@ void Client::init(const char *peerAddr, int port_number = 4443){
     sock->init(peerAddr, port_number);
 }
 
-bool Client::verify(){
-    const char* verify = "hello";
-    sock->sockSend(verify,sizeof(verify));
+bool Client::verify(const char *username, const char *password) {
+    VerifyPacket verify;
+    uint32_t usernameLen =(uint8_t) strlen(username) + 1;
+    uint32_t passwordLen =(uint8_t) strlen(password) + 1;
+    memcpy(verify.verifyInfo,username,usernameLen);
+    memcpy(verify.verifyInfo+usernameLen,password,passwordLen);
+    verify.usernameLen = usernameLen;
+    verify.passwordLen = passwordLen;
+    sock->sockSend((const char*)&verify,sizeof(verify));
     VpnInitPacket initPacket{};
-    sock->sockRecv((char*)&initPacket,sizeof(vpnInitPacket));
+    auto length = sock->sockRecv((char*)&initPacket,sizeof(vpnInitPacket));
+    if(length == 0){
+        printf("\n验证失败！\n");
+        return false;
+    }
+    printf("\n验证成功！\n");
     tun->init(initPacket.virtualIP, initPacket.mask);
-    for(int i=0;i<initPacket.routeCnt;i++)
+    for(int i=0;i<initPacket.routeCnt;i++){
         tun->addRouteTo(initPacket.routes[i].IP,initPacket.routes[i].netmask);
+        printf("TLS服务器代理的子网 %s ",inet_ntoa(initPacket.routes[i].IP));
+        printf("子网掩码: %s\n", inet_ntoa(initPacket.routes[i].netmask));
+    }
     return true;
 }
 
@@ -25,10 +39,9 @@ void Client::tunSelected() {
     long len;
     char buff[buff_size];
 
-    printf("Got a packet from TUN\n");
-
     bzero(buff, buff_size);
     len = tun->recv(buff,buff_size);
+    printf("Got a packet from TUN\n");
     sock->sockSend(buff, len);
 }
 
@@ -36,14 +49,13 @@ void Client::socketSelected(){
     long len;
     char buff[buff_size];
 
-    printf("Got a packet from the tunnel\n");
-
     bzero(buff, buff_size);
     len = sock->sockRecv(buff, buff_size);
     if(len == 0){
-        printf("Server Stop the tunnel!\n");
+        printf("服务端停止了连接\n");
         exit(0);
     }
+    printf("Got a packet from the tunnel\n");
     tun->send(buff,len);
 }
 
