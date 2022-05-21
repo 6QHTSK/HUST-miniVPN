@@ -11,16 +11,20 @@
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 class SockBase {
 protected:
     int sockfd;
+    SSL *ssl;
 public:
     SockBase();
     void init();
     ~SockBase();
-    ssize_t sockSend(const char* buff, size_t len) const;
-    ssize_t sockRecv(char* buff, size_t size) const;
+    ssize_t sockSend(const void *buff, size_t len) const;
+    ssize_t sockRecv(void *buff, size_t size) const;
     int fd() const;
 };
 

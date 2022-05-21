@@ -63,14 +63,20 @@ private:
     std::map<uint32_t ,SockConnection*> connPoolVirAddr;  // virtual addr -> connSocket
 
     void tunSelected();
-    void listenSocketSelected();
-    void tcpEstabSelected(SockConnection *pConnection);
-    void vpnEstabSelected(SockConnection *conn);
+    void acceptNewConnection();
+    void connectionEstab(SockConnection *conn);
+    void getSocketData(SockConnection *conn);
 
 public:
     ~Server();
     void init(int port_number);
     [[noreturn]] void listen();
+
+    void tcpEstabSelected(SockConnection *conn);
+
+    void tcpConnectSelected(SockConnection *conn);
+
+    void deleteConn(SockConnection *conn);
 };
 
 

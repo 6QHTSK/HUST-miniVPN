@@ -61,10 +61,10 @@ void Client::socketSelected(){
 
 [[noreturn]] void Client::listen() {
     Epoll epoll;
-    epoll.add(sock->fd());
-    epoll.add(tun->fd());
+    epoll.Add(sock->fd(), EPOLLIN | EPOLLET);
+    epoll.Add(tun->fd(), EPOLLIN | EPOLLET);
     while (true) {
-       int eventCnt = epoll.wait();
+       int eventCnt = epoll.Wait();
        for(int i=0;i<eventCnt;i++){
            int eventfd = epoll.events[i].data.fd;
            if(eventfd == sock->fd())

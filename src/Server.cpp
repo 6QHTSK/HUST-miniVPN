@@ -157,10 +157,10 @@ void Server::tunSelected() {
 }
 
 // listen socket 有回应，进行三次握手建立连接
-void Server::listenSocketSelected() {
+void Server::acceptNewConnection() {
     auto conn = sock->sockAccept();
     connPoolFd[conn->fd()] = conn;    // 在socket池中注册该socket
-    epoll.add(conn->fd());
+    epoll.Add(conn->fd(), EPOLLIN | EPOLLET | EPOLLRDHUP);
 }
 
 bool verify(const VerifyPacket packet){
@@ -174,15 +174,13 @@ bool verify(const VerifyPacket packet){
     return strcmp(epasswd,pw->sp_pwdp) == 0;
 }
 
-void Server::tcpEstabSelected(SockConnection *conn) {
+void Server::connectionEstab(SockConnection *conn) {
     // 此部分接受账户密码
     VerifyPacket verifyPacket;
     conn->sockRecv((char*)&verifyPacket,sizeof(verifyPacket));
     if(!verify(verifyPacket)){
-        fprintf(stdout,"TLS客户端(%s)验证失败！",inet_ntoa(conn->peerAddr.sin_addr));
-        connPoolFd.erase(conn->fd());
-        conn->status = NO_CONN;
-        delete conn;
+        fprintf(stdout,"TLS客户端(%s)验证失败\n",inet_ntoa(conn->peerAddr.sin_addr));
+        deleteConn(conn);
         return;
     }
     // 分配虚拟地址
@@ -199,21 +197,13 @@ void Server::tcpEstabSelected(SockConnection *conn) {
     conn->status = VPN_ESTAB;
 }
 
-void Server::vpnEstabSelected(SockConnection *conn){
+void Server::getSocketData(SockConnection *conn){
     char buff[buff_size];
     bzero(buff, buff_size);
     auto len = conn->sockRecv(buff, buff_size);
     if(len == 0){
         printf("客户端(%s) 停止了连接\n", inet_ntoa(conn->peerAddr.sin_addr));
-        connPoolFd.erase(conn->fd());
-        if(conn->status == VPN_ESTAB){
-            if(conn->virtualAddr.s_addr != 0){
-                connPoolVirAddr.erase(conn->virtualAddr.s_addr);
-                virAddrPool.FreeVirAddr(conn->peerAddr.sin_addr);
-            }
-        }
-        conn->status = NO_CONN;
-        delete conn;
+        deleteConn(conn);
         return;
     }
     printf("Got a packet from the tunnel(%s)\n", inet_ntoa(conn->peerAddr.sin_addr));
@@ -221,25 +211,30 @@ void Server::vpnEstabSelected(SockConnection *conn){
 }
 
 void Server::listen() {
-    epoll.add(sock->fd());
-    epoll.add(tun->fd());
+    epoll.Add(sock->fd(), EPOLLIN | EPOLLET | EPOLLRDHUP);
+    epoll.Add(tun->fd(), EPOLLIN | EPOLLET);
     while (true) {
-        int eventCnt = epoll.wait();
+        int eventCnt = epoll.Wait();
         for (int i=0;i<eventCnt;i++){
             int eventfd = epoll.events[i].data.fd;
             if(eventfd == sock->fd())
-                listenSocketSelected();
+                acceptNewConnection();
             else if(eventfd == tun->fd())
                 tunSelected();
             else{
                 auto conn = connPoolFd[eventfd];
                 if (conn != nullptr){
+                    if(epoll.events[i].events & EPOLLHUP){
+                        printf("Socket Closed!\n");
+                        deleteConn(conn);
+                        continue;
+                    }
                     switch(conn->status){
-                        case TCP_ESTAB:
-                            tcpEstabSelected(conn);
+                        case SSL_ESTAB:
+                            connectionEstab(conn);
                             break;
                         case VPN_ESTAB:
-                            vpnEstabSelected(conn);
+                            getSocketData(conn);
                             break;
                         default:
                             printf("Get Nothing package!! status:%d",conn->status);
@@ -253,4 +248,16 @@ void Server::listen() {
 Server::~Server() {
     delete tun;
     delete sock;
+}
+
+void Server::deleteConn(SockConnection *conn){
+    connPoolFd.erase(conn->fd());
+    if(conn->status == VPN_ESTAB){
+        if(conn->virtualAddr.s_addr != 0){
+            connPoolVirAddr.erase(conn->virtualAddr.s_addr);
+            virAddrPool.FreeVirAddr(conn->peerAddr.sin_addr);
+        }
+    }
+    conn->status = TCP_ACCEPT;
+    delete conn;
 }

@@ -4,12 +4,14 @@
 
 #include "SockBase.h"
 
-ssize_t SockBase::sockSend(const char *buff, size_t len) const {
-    return send(sockfd, buff, len, 0);
+ssize_t SockBase::sockSend(const void *buff, size_t len) const {
+    return SSL_write(ssl, buff, len);
+    //return send(sockfd, buff, len, 0);
 }
 
-ssize_t SockBase::sockRecv(char *buff, size_t size) const {
-    return recv(sockfd, buff, size, 0);
+ssize_t SockBase::sockRecv(void *buff, size_t size) const {
+    return SSL_read(ssl,buff,size);
+    //return recv(sockfd, buff, size, 0);
 }
 
 int SockBase::fd() const {
@@ -17,6 +19,10 @@ int SockBase::fd() const {
 }
 
 SockBase::~SockBase() {
+    if(ssl != nullptr){
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
     close(sockfd);
 }
 

@@ -11,10 +11,15 @@
 #include <cstring>
 #include <cstdio>
 #include <unistd.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include "SockBase.h"
 
 class SockClient : public SockBase {
+private:
+    SSL_CTX *ctx;
 public:
+    ~SockClient();
     void init(const char *svrip, int port_number);
 };
 

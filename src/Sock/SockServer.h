@@ -13,22 +13,28 @@
 #include <cstdio>
 #include <map>
 #include "SockBase.h"
+#include <sys/epoll.h>
+#include <poll.h>
 
-typedef enum connection_status{NO_CONN,TCP_ESTAB,SSL_ESTAB,VPN_ESTAB} connection_status;
+typedef enum connection_status{TCP_ACCEPT,SSL_ESTAB,VPN_ESTAB} connection_status;
 
 class SockConnection : public SockBase{
+private:
+    SSL_CTX *ctx;
+    bool initSSL();
 public:
-    SockConnection();
-
+    explicit SockConnection(SSL_CTX *ctx_in);
     struct sockaddr_in peerAddr;
     struct in_addr virtualAddr;
     connection_status status;
-    explicit SockConnection(int listenfd);
     void init(int listenfd);
 };
 
 class SockServer : public SockBase {
+private:
+    SSL_CTX *ctx;
 public:
+    ~SockServer();
     void init(int port_number);
     SockConnection * sockAccept() const;
 };
