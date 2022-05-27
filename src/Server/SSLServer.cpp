@@ -2,14 +2,14 @@
 // Created by csepsk on 2022/5/15.
 //
 
-#include "SockServer.h"
+#include "SSLServer.h"
 
 #define HOME	"./openssl/"
 #define CERTF	HOME"server.crt"
 #define KEYF	HOME"server.key"
 #define CACERT	HOME"ca.crt"
 
-void SockServer::init(int port_number) {
+auto initSSLCtx(){
     // Step 0: OpenSSL library initialization
     // This step is no longer needed as of version 1.1.0.
     SSL_library_init();
@@ -18,10 +18,14 @@ void SockServer::init(int port_number) {
 
     // Step 1: SSL context initialization
     const SSL_METHOD *meth = SSLv23_server_method();
-    ctx = SSL_CTX_new(meth);
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
-    //SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
-    SSL_CTX_load_verify_locations(ctx, CACERT, nullptr);
+    auto ctx = SSL_CTX_new(meth);
+    //SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
+    // 加载CA
+    if(SSL_CTX_load_verify_locations(ctx, CACERT, nullptr) != 1){
+        ERR_print_errors_fp(stderr);
+        exit(1);
+    }
 
     // Step 2: Set up the server certificate and private key
     if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
@@ -36,9 +40,16 @@ void SockServer::init(int port_number) {
         fprintf(stderr, "Private key does not match the certificate public key\n");
         exit(5);
     }
-    printf("SSL 部分初始化完成！\n");
+    return ctx;
+}
 
-    SockBase::init();
+void SSLServer::Init(int port_number) {
+    ctx = initSSLCtx();
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        printf("Create socket failed! (%d: %s)\n", errno, strerror(errno));
+        exit(-1);
+    }
     struct sockaddr_in server{};
 
     memset(&server, 0, sizeof(server));
@@ -60,42 +71,63 @@ void SockServer::init(int port_number) {
     printf("TLS服务器已启动，通过下述IP地址连接：\n");
 }
 
-SockConnection* SockServer::sockAccept() const {
-    auto conn = new SockConnection(ctx);
-    conn->init(sockfd);
-    return conn;
-}
-
-SockServer::~SockServer(){
-    SSL_CTX_free(ctx);
-}
-
-SockConnection::SockConnection(SSL_CTX* ctx_in) : peerAddr(),virtualAddr(),ctx(ctx_in){}
-
-void SockConnection::init(int listenfd) {
+SSLConnection* SSLServer::Accept() const {
+    struct sockaddr_in peerAddr{};
     socklen_t peerAddrLen = sizeof( peerAddr );
-    sockfd = accept(listenfd, ( struct sockaddr* )&peerAddr, &peerAddrLen );
+    int connfd = accept(sockfd, ( struct sockaddr* )&peerAddr, &peerAddrLen );
     if(sockfd == -1){
         printf("无法接受连接 (%d:%s)\n",errno, strerror(errno));
-        exit(-1);
+        return nullptr;
     }
-    ssl = SSL_new(ctx); // ctx
+    SSL* ssl = SSL_new(ctx); // ctx
     if(ssl == nullptr){
         printf("SSL_new failed!");
-        exit(-1);
+        return nullptr;
     }
-    int r = SSL_set_fd(ssl,sockfd);
+    int r = SSL_set_fd(ssl,connfd);
     if(r == 0){
         printf("SSL_set_fd failed!,(%d,%s)",errno, strerror(errno));
-        exit(-1);
+        return nullptr;
     }
     r = SSL_accept(ssl);
     if( r <= 0 ){
         printf("无法建立SSL连接(%d)\n", SSL_get_error(ssl,r));
-        exit(-1);
+        return nullptr;
     }else{
         printf("完成SSL连接\n");
     }
-    status = SSL_ESTAB;
     printf("TLS客户端 %s 开始连接\n",inet_ntoa( peerAddr.sin_addr ));
+    auto conn = new SSLConnection(connfd, ssl, peerAddr);
+    return conn;
+}
+
+int SSLServer::Fd() const {
+    return sockfd;
+}
+
+SSLServer::~SSLServer(){
+    close(sockfd);
+    SSL_CTX_free(ctx);
+}
+
+SSLConnection::SSLConnection(int fd, SSL* ssl_in, sockaddr_in peerAddr_in) : peerAddr(peerAddr_in), sockfd(fd), ssl(ssl_in){}
+
+SSLConnection::~SSLConnection(){
+    if(ssl != nullptr){
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
+    close(sockfd);
+}
+
+ssize_t SSLConnection::Send(const void *buff, size_t len) const {
+    return SSL_write(ssl, buff, (int)len);
+}
+
+ssize_t SSLConnection::Recv(void *buff, size_t size) const {
+    return SSL_read(ssl,buff,(int)size);
+}
+
+int SSLConnection::Fd() const {
+    return sockfd;
 }

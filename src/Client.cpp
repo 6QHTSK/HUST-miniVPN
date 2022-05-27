@@ -5,12 +5,15 @@
 #include "Client.h"
 
 void Client::init(const char *peerAddr, int port_number = 4443){
-    sock = new SockClient();
+    sock = new SSLClient();
     tun = new Tun;
-    sock->init(peerAddr, port_number);
+    sock->Init(peerAddr, port_number);
 }
 
 bool Client::verify(const char *username, const char *password) {
+    if(sock == nullptr || tun == nullptr){
+        throw std::invalid_argument("sock/tun 未定义");
+    }
     VerifyPacket verify;
     uint32_t usernameLen =(uint8_t) strlen(username) + 1;
     uint32_t passwordLen =(uint8_t) strlen(password) + 1;
@@ -18,9 +21,9 @@ bool Client::verify(const char *username, const char *password) {
     memcpy(verify.verifyInfo+usernameLen,password,passwordLen);
     verify.usernameLen = usernameLen;
     verify.passwordLen = passwordLen;
-    sock->sockSend((const char*)&verify,sizeof(verify));
+    sock->Send((const char *) &verify, sizeof(verify));
     VpnInitPacket initPacket{};
-    auto length = sock->sockRecv((char*)&initPacket,sizeof(vpnInitPacket));
+    auto length = sock->Recv((char *) &initPacket, sizeof(vpnInitPacket));
     if(length == 0){
         printf("\n验证失败！\n");
         return false;
@@ -35,22 +38,22 @@ bool Client::verify(const char *username, const char *password) {
     return true;
 }
 
-void Client::tunSelected() {
+void Client::sendPackage() {
     long len;
     char buff[buff_size];
 
     bzero(buff, buff_size);
     len = tun->recv(buff,buff_size);
     printf("Got a packet from TUN\n");
-    sock->sockSend(buff, len);
+    sock->Send(buff, len);
 }
 
-void Client::socketSelected(){
+void Client::recvPackage(){
     long len;
     char buff[buff_size];
 
     bzero(buff, buff_size);
-    len = sock->sockRecv(buff, buff_size);
+    len = sock->Recv(buff, buff_size);
     if(len == 0){
         printf("服务端停止了连接\n");
         exit(0);
@@ -60,17 +63,20 @@ void Client::socketSelected(){
 }
 
 [[noreturn]] void Client::listen() {
+    if(sock == nullptr || tun == nullptr){
+        throw std::invalid_argument("sock/tun 未定义");
+    }
     Epoll epoll;
-    epoll.Add(sock->fd(), EPOLLIN | EPOLLET);
+    epoll.Add(sock->Fd(), EPOLLIN | EPOLLET);
     epoll.Add(tun->fd(), EPOLLIN | EPOLLET);
     while (true) {
        int eventCnt = epoll.Wait();
        for(int i=0;i<eventCnt;i++){
            int eventfd = epoll.events[i].data.fd;
-           if(eventfd == sock->fd())
-               socketSelected();
+           if(eventfd == sock->Fd())
+               recvPackage();
            else if(eventfd == tun->fd())
-               tunSelected();
+               sendPackage();
        }
     }
 }

@@ -23,7 +23,7 @@ public:
     explicit Epoll(int size=5);
     void Add(int eventFd, int listenEvent);
     int Wait();
-    void Modify(int eventFd, int enableEvent, int disableEvent);
+    // void Delete？
 };
 
 

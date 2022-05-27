@@ -21,7 +21,7 @@ typedef struct vpnInitPacket{
 
 typedef struct verifyPacket{
     uint8_t usernameLen;
-    uint8_t passwordLen;
+    __attribute__((unused)) uint8_t passwordLen;
     char verifyInfo[128];   // max length 128
     const char* username() const{
         return verifyInfo;
@@ -30,5 +30,11 @@ typedef struct verifyPacket{
         return verifyInfo + usernameLen;
     }
 }VerifyPacket;
+
+typedef struct ipHeader{
+    __attribute__((unused)) uint8_t frontPadding[12];
+    uint32_t srcIP;
+    uint32_t destIP;
+} IPHeader;
 
 #endif //MINIVPN_PACKET_H

@@ -8,19 +8,20 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <stdexcept>
 #include "Tun/Tun.h"
 #include "Epoll/Epoll.h"
-#include "Sock/SockClient.h"
+#include "Client/SSLClient.h"
 #include "Model/Packet.h"
 
 class Client {
 private:
     const int buff_size = 2000;
-    Tun* tun;
-    SockClient* sock;
+    Tun* tun = nullptr;
+    SSLClient* sock = nullptr;
 
-    void tunSelected();
-    void socketSelected();
+    void sendPackage();
+    void recvPackage();
 
 public:
     ~Client();

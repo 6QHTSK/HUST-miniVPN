@@ -2,7 +2,7 @@
 // Created by csepsk on 2022/5/15.
 //
 
-#include "SockClient.h"
+#include "SSLClient.h"
 
 /* define HOME to be dir for key and cert files... */
 #define HOME	"./openssl/"
@@ -12,8 +12,19 @@
 #define KEYF	HOME"client.key"
 #define CACERT	HOME"ca.crt"
 
+ssize_t SSLClient::Send(const void *buff, size_t len) const {
+    return SSL_write(ssl, buff, (int)len);
+}
 
-void SockClient::init(const char *svrip, int port_number){
+ssize_t SSLClient::Recv(void *buff, size_t size) const {
+    return SSL_read(ssl,buff,(int)size);
+}
+
+int SSLClient::Fd() const {
+    return sockfd;
+}
+
+auto initSSLCtx(){
     // Step 0: OpenSSL library initialization
     // This step is no longer needed as of version 1.1.0.
     SSL_library_init();
@@ -21,26 +32,43 @@ void SockClient::init(const char *svrip, int port_number){
     SSLeay_add_ssl_algorithms();
 
     auto meth = SSLv23_client_method();
-    ctx = SSL_CTX_new(meth);
+    auto ctx = SSL_CTX_new(meth);
 
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+    // 加载CA证书
+    if(SSL_CTX_load_verify_locations(ctx,CACERT, nullptr) != 1){
+        ERR_print_errors_fp(stderr);
+        exit(-1);
+    }
+    if(SSL_CTX_set_default_verify_paths(ctx) != 1){
+        ERR_print_errors_fp(stderr);
+        exit(-1);
+    }
+    // 加载客户端证书
     if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(-2);
     }
-
+    // 加载客户端私钥
     if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(-3);
     }
-
+    // 验证私钥
     if (!SSL_CTX_check_private_key(ctx)) {
         printf("Private key does not match the certificate public keyn");
         exit(-4);
     }
-    printf("SSL 部分初始化完成！\n");
+    return ctx;
+}
 
-    SockBase::init();
+void SSLClient::Init(const char *svrip, int port_number){
+    ctx = initSSLCtx();
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        printf("Create socket failed! (%d: %s)\n", errno, strerror(errno));
+        exit(-1);
+    }
 
     struct sockaddr_in peerAddr{};
     memset(&peerAddr, 0, sizeof(peerAddr));
@@ -68,6 +96,11 @@ void SockClient::init(const char *svrip, int port_number){
     }
 }
 
-SockClient::~SockClient() {
+SSLClient::~SSLClient() {
+    if(ssl != nullptr){
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
+    close(sockfd);
     SSL_CTX_free(ctx);
 }

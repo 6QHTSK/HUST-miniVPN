@@ -16,6 +16,7 @@
 #include <linux/route.h>
 #include <sys/ioctl.h>
 #include <cstdlib>
+#include <stdexcept>
 #include "TunController.h"
 
 class Tun {

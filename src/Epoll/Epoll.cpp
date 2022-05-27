@@ -25,19 +25,6 @@ void Epoll::Add(int eventFd, int listenEvent){
     int new_option = old_option | O_NONBLOCK;
     fcntl( eventFd, F_SETFL, new_option );
 }
-void Epoll::Modify(int eventFd, int enableEvent, int disableEvent){
-    struct epoll_event event{};
-    uint32_t oldEvent = epollListen[eventFd];
-    event.data.fd = eventFd;
-    event.events = (oldEvent & disableEvent) | enableEvent;
-    epollListen[eventFd] = event.events;
-    printf("modifying fd %d events read %d write %d\n",
-        eventFd, event.events & EPOLLIN, event.events & EPOLLOUT);
-    int r = epoll_ctl(epollFd, EPOLL_CTL_MOD, eventFd, &event);
-    if(r != 0){
-        printf("epoll_ctl mod failed (%d,%s)", errno, strerror(errno));
-    }
-}
 int Epoll::Wait(){
     int eventCnt = epoll_wait(epollFd,events,maxEpollEvent,-1);
     if (eventCnt < 0){

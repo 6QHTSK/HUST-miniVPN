@@ -60,6 +60,9 @@ Tun::~Tun() {
 }
 
 void Tun::addRouteTo(in_addr destIP, in_addr netmask) {
+    if(ctlSock == nullptr){
+        throw std::invalid_argument("ctlSock 未定义");
+    }
     ctlSock->adapterAddRouteTo(destIP,netmask);
 }
 
