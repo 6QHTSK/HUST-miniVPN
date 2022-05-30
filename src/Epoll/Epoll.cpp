@@ -26,7 +26,7 @@ void Epoll::Add(int eventFd, int listenEvent){
     fcntl( eventFd, F_SETFL, new_option );
 }
 int Epoll::Wait(){
-    int eventCnt = epoll_wait(epollFd,events,maxEpollEvent,-1);
+    int eventCnt = epoll_wait(epollFd, Events, maxEpollEvent, -1);
     if (eventCnt < 0){
         printf("Epoll Failed!");
         exit(-1);

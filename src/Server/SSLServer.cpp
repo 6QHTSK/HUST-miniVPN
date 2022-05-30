@@ -37,7 +37,7 @@ auto initSSLCtx(){
         exit(4);
     }
     if (!SSL_CTX_check_private_key(ctx)) {
-        fprintf(stderr, "Private key does not match the certificate public key\n");
+        fprintf(stderr, "私钥与证书之间验证失败！\n");
         exit(5);
     }
     return ctx;
@@ -72,6 +72,11 @@ void SSLServer::Init(int port_number) {
 }
 
 SSLConnection* SSLServer::Accept() const {
+    SSL* ssl = SSL_new(ctx); // ctx
+    if(ssl == nullptr){
+        printf("SSL_new failed!");
+        return nullptr;
+    }
     struct sockaddr_in peerAddr{};
     socklen_t peerAddrLen = sizeof( peerAddr );
     int connfd = accept(sockfd, ( struct sockaddr* )&peerAddr, &peerAddrLen );
@@ -79,26 +84,24 @@ SSLConnection* SSLServer::Accept() const {
         printf("无法接受连接 (%d:%s)\n",errno, strerror(errno));
         return nullptr;
     }
-    SSL* ssl = SSL_new(ctx); // ctx
-    if(ssl == nullptr){
-        printf("SSL_new failed!");
-        return nullptr;
-    }
     int r = SSL_set_fd(ssl,connfd);
     if(r == 0){
         printf("SSL_set_fd failed!,(%d,%s)",errno, strerror(errno));
+        close(connfd);
         return nullptr;
     }
     r = SSL_accept(ssl);
     if( r <= 0 ){
         printf("无法建立SSL连接(%d)\n", SSL_get_error(ssl,r));
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+        close(connfd);
         return nullptr;
     }else{
-        printf("完成SSL连接\n");
+        auto conn = new SSLConnection(connfd, ssl, peerAddr);
+        printf("TLS客户端 %s 开始连接\n",inet_ntoa( peerAddr.sin_addr ));
+        return conn;
     }
-    printf("TLS客户端 %s 开始连接\n",inet_ntoa( peerAddr.sin_addr ));
-    auto conn = new SSLConnection(connfd, ssl, peerAddr);
-    return conn;
 }
 
 int SSLServer::Fd() const {

@@ -20,6 +20,8 @@
 #include "Server/VirtualAddress.h"
 #include "Server/InterfaceInfo.h"
 
+#define NEED_LOGGING 1
+
 class Server {
 private:
     const int buff_size = 2000;
@@ -38,10 +40,10 @@ private:
 
 public:
     ~Server();
-    void init(int port_number);
-    [[noreturn]] void listen();
+    void Init(int port_number);
+    [[noreturn]] void Listen();
 
-    void deleteConn(SSLConnection *conn);
+    void DeleteConn(SSLConnection *conn);
 };
 
 

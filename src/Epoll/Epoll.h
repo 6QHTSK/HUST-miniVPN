@@ -19,7 +19,7 @@ private:
     static const int maxEpollEvent = 1024;
     std::map<int,uint32_t >epollListen;
 public:
-    struct epoll_event events[maxEpollEvent]{}; // epoll的event data中存放fd
+    struct epoll_event Events[maxEpollEvent]{}; // epoll的event data中存放fd
     explicit Epoll(int size=5);
     void Add(int eventFd, int listenEvent);
     int Wait();

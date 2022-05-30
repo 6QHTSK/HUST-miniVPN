@@ -8,7 +8,7 @@
 #define HOME	"./openssl/"
 
 /* Make these what you want for cert & key files */
-#define CERTF	HOME"client.crt"
+#define CERTF	HOME"expired_client.crt"
 #define KEYF	HOME"client.key"
 #define CACERT	HOME"ca.crt"
 
@@ -87,12 +87,12 @@ void SSLClient::Init(const char *svrip, int port_number){
     SSL_set_fd(ssl, sockfd);
     auto r = SSL_connect(ssl);
 
-    if(r <= 0 && SSL_get_verify_result(ssl) == X509_V_OK){
+    if(r <= 0){
         auto err = SSL_get_error(ssl, r);
         printf("验证失败！(%d),(%d: %s)\n",err, errno, strerror(errno));
         exit(-1);
     }else{
-        printf("验证成功\n");
+        printf("服务器证书验证成功\n");
     }
 }
 

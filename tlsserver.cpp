@@ -6,6 +6,6 @@
 using namespace std;
 int main(){
     Server tlsServer;
-    tlsServer.init(55555);
-    tlsServer.listen();
+    tlsServer.Init(55555);
+    tlsServer.Listen();
 }

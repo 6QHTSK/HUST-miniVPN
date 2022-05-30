@@ -25,9 +25,9 @@ private:
 
 public:
     ~Client();
-    void init(const char *peerAddr, int port_number);
-    bool verify(const char *username, const char *password);
-    [[noreturn]] void listen();
+    void Init(const char *peerAddr, int port_number);
+    bool Verify(const char *username, const char *password);
+    [[noreturn]] void Listen();
 };
 
 

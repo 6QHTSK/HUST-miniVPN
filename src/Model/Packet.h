@@ -12,6 +12,11 @@ typedef struct subnet{
     in_addr netmask;
 }Subnet;
 
+typedef struct helloPacket{
+    char msg[15];
+    char need_logging;
+}HelloPacket;
+
 typedef struct vpnInitPacket{
     in_addr virtualIP;
     in_addr mask;

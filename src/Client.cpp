@@ -4,13 +4,19 @@
 
 #include "Client.h"
 
-void Client::init(const char *peerAddr, int port_number = 4443){
+void Client::Init(const char *peerAddr, int port_number = 4443){
     sock = new SSLClient();
     tun = new Tun;
     sock->Init(peerAddr, port_number);
+    HelloPacket packet;
+    auto len=sock->Recv(&packet,sizeof(HelloPacket));
+    if(len == 0){
+        printf("检查客户端证书，服务端认证失败！\n");
+        exit(-1);
+    }
 }
 
-bool Client::verify(const char *username, const char *password) {
+bool Client::Verify(const char *username, const char *password) {
     if(sock == nullptr || tun == nullptr){
         throw std::invalid_argument("sock/tun 未定义");
     }
@@ -62,7 +68,7 @@ void Client::recvPackage(){
     tun->send(buff,len);
 }
 
-[[noreturn]] void Client::listen() {
+[[noreturn]] void Client::Listen() {
     if(sock == nullptr || tun == nullptr){
         throw std::invalid_argument("sock/tun 未定义");
     }
@@ -72,7 +78,7 @@ void Client::recvPackage(){
     while (true) {
        int eventCnt = epoll.Wait();
        for(int i=0;i<eventCnt;i++){
-           int eventfd = epoll.events[i].data.fd;
+           int eventfd = epoll.Events[i].data.fd;
            if(eventfd == sock->Fd())
                recvPackage();
            else if(eventfd == tun->fd())

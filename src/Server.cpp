@@ -4,7 +4,7 @@
 
 #include "Server.h"
 
-void Server::init(int port_number) {
+void Server::Init(int port_number) {
     ifInfo.Init();
     in_addr virNet{};
     inet_aton("192.168.53.0",&virNet);
@@ -38,12 +38,14 @@ void Server::sendPackage() {
     conn->Send(buff, len);
 }
 
-// listen socket 有回应，进行三次握手建立连接
+// Listen socket 有回应，进行三次握手建立连接
 void Server::acceptNewConnection() {
     auto conn = sock->Accept();
     if(conn == nullptr){
         return;
     }
+    auto packet = HelloPacket{.msg="MiniVPN Server",.need_logging=NEED_LOGGING};
+    conn->Send(&packet,sizeof(HelloPacket));
     connPoolFd[conn->Fd()] = conn;    // 在socket池中注册该socket
     epoll.Add(conn->Fd(), EPOLLIN | EPOLLET);
 }
@@ -63,11 +65,13 @@ void Server::connectionEstab(SSLConnection *conn) {
     // 此部分接受账户密码
     VerifyPacket verifyPacket;
     conn->Recv((char *) &verifyPacket, sizeof(verifyPacket));
+#ifdef NEED_LOGGING
     if(!verify(verifyPacket)){
         fprintf(stdout,"TLS客户端(%s)验证失败\n",inet_ntoa(conn->peerAddr.sin_addr));
-        deleteConn(conn);
+        DeleteConn(conn);
         return;
     }
+#endif
     // 分配虚拟地址
     VpnInitPacket initPacket{
         .virtualIP = virAddrPool.Alloc(conn->peerAddr.sin_addr),
@@ -90,14 +94,14 @@ void Server::recvPackage(SSLConnection *conn){
     auto len = conn->Recv(buff, buff_size);
     if(len == 0){
         printf("客户端(%s) 停止了连接\n", inet_ntoa(conn->peerAddr.sin_addr));
-        deleteConn(conn);
+        DeleteConn(conn);
         return;
     }
     printf("Got a packet from the tunnel(%s)\n", inet_ntoa(conn->peerAddr.sin_addr));
     tun->send(buff,len);
 }
 
-void Server::listen() {
+void Server::Listen() {
     if(sock == nullptr || tun == nullptr){
         throw std::invalid_argument("sock/tun 未定义");
     }
@@ -106,7 +110,7 @@ void Server::listen() {
     while (true) {
         int eventCnt = epoll.Wait();
         for (int i=0;i<eventCnt;i++){
-            int eventfd = epoll.events[i].data.fd;
+            int eventfd = epoll.Events[i].data.fd;
             if(eventfd == sock->Fd())
                 acceptNewConnection();
             else if(eventfd == tun->fd())
@@ -133,7 +137,7 @@ Server::~Server() {
     delete sock;
 }
 
-void Server::deleteConn(SSLConnection *conn){
+void Server::DeleteConn(SSLConnection *conn){
     connPoolFd.erase(conn->Fd());
     if(conn->status == VPN_ESTAB){
         if(conn->virtualAddr.s_addr != 0){

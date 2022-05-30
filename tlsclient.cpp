@@ -20,7 +20,7 @@ using namespace std;
 int main(int argc, char *argv[]){
     if(argc == 2){
         Client tlsClient;
-        tlsClient.init(argv[1], 55555);
+        tlsClient.Init(argv[1], 55555);
         printf("用户名:");
         char username[64];
         scanf("%63s",username);
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]){
         char password[64];
         scanf("%63s",password);
         SetStdinEcho(true);
-        if(tlsClient.verify((const char*)username,(const char*) password)){
-            tlsClient.listen();
+        if(tlsClient.Verify((const char *) username, (const char *) password)){
+            tlsClient.Listen();
         }
 
     }
