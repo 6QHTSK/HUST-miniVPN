@@ -7,8 +7,8 @@ RUN apt-get clean
 RUN apt-get update
 RUN apt-get install -y telnet net-tools
 
-COPY ./openssl/ca.crt /opt/tlsClient/cert/
-COPY ./openssl/client.key /opt/tlsClient/cert/
-COPY ./openssl/client.crt /opt/tlsClient/cert/
+COPY ./cert/ca.crt /opt/tlsClient/cert/
+COPY ./cert/client.key /opt/tlsClient/cert/
+COPY ./cert/client.crt /opt/tlsClient/cert/
 COPY ./release/tlsclient /opt/tlsClient/
 COPY ./lib/ /opt/tlsClient/lib/

@@ -8,8 +8,8 @@ RUN apt-get update
 RUN apt-get install -y telnet net-tools
 RUN useradd test && echo 'test:123456' | chpasswd
 
-COPY ./openssl/ca.crt /opt/tlsServer/cert/
-COPY ./openssl/server.key /opt/tlsServer/cert/
-COPY ./openssl/server.crt /opt/tlsServer/cert/
+COPY ./cert/ca.crt /opt/tlsServer/cert/
+COPY ./cert/server.key /opt/tlsServer/cert/
+COPY ./cert/server.crt /opt/tlsServer/cert/
 COPY ./release/tlsserver /opt/tlsServer/
 COPY ./lib/ /opt/tlsServer/lib/
