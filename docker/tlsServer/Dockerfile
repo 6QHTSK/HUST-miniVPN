@@ -1,0 +1,15 @@
+FROM ubuntu:latest
+MAINTAINER 6QHTSK "psk2019@qq.com"
+WORKDIR /opt/tlsServer
+
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN apt-get clean
+RUN apt-get update
+RUN apt-get install -y telnet net-tools
+RUN useradd test && echo 'test:123456' | chpasswd
+
+COPY ./openssl/ca.crt /opt/tlsServer/cert/
+COPY ./openssl/server.key /opt/tlsServer/cert/
+COPY ./openssl/server.crt /opt/tlsServer/cert/
+COPY ./release/tlsserver /opt/tlsServer/
+COPY ./lib/ /opt/tlsServer/lib/

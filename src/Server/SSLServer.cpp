@@ -4,7 +4,7 @@
 
 #include "SSLServer.h"
 
-#define HOME	"./openssl/"
+#define HOME	"./cert/"
 #define CERTF	HOME"server.crt"
 #define KEYF	HOME"server.key"
 #define CACERT	HOME"ca.crt"

@@ -32,11 +32,11 @@ in_addr VirtualAddress::Alloc(in_addr peer) {
     if(poolSize < maxPoolSize){
         viraddr[poolSize].peer = peer;
         viraddr[poolSize].enable = true;
-        return generate(poolSize);
+        return generate(poolSize++);
     }
     for(uint8_t i=0;i<poolSize;i++){
         if(!viraddr[i].enable){
-            viraddr[poolSize].peer = peer;
+            viraddr[i].peer = peer;
             viraddr[i].enable = true;
             return generate(i);
         }

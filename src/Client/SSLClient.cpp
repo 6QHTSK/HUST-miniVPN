@@ -5,10 +5,10 @@
 #include "SSLClient.h"
 
 /* define HOME to be dir for key and cert files... */
-#define HOME	"./openssl/"
+#define HOME	"./cert/"
 
 /* Make these what you want for cert & key files */
-#define CERTF	HOME"expired_client.crt"
+#define CERTF	HOME"client.crt"
 #define KEYF	HOME"client.key"
 #define CACERT	HOME"ca.crt"
 

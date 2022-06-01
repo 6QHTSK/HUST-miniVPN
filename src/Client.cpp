@@ -11,7 +11,7 @@ void Client::Init(const char *peerAddr, int port_number = 4443){
     HelloPacket packet;
     auto len=sock->Recv(&packet,sizeof(HelloPacket));
     if(len == 0){
-        printf("检查客户端证书，服务端认证失败！\n");
+        printf("检查客户端证书（例如是否过期），服务端认证失败！\n");
         exit(-1);
     }
 }

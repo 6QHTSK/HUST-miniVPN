@@ -11,7 +11,7 @@ find_package(OpenSSL REQUIRED)
 #endif()
 
 add_executable(tlsclient tlsclient.cpp src/Client.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Client/SSLClient.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
-add_executable(tlsserver tlsserver.cpp src/Server.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Server/SSLServer.cpp src/Epoll/Epoll.cpp src/Model/Packet.h src/Server/VirtualAddress.cpp src/Server/VirtualAddress.h src/Server/InterfaceInfo.cpp src/Server/InterfaceInfo.h)
+add_executable(tlsserver tlsserver.cpp src/Server.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Server/SSLServer.cpp src/Epoll/Epoll.cpp src/Model/Packet.h src/Server/VirtualAddress.cpp src/Server/InterfaceInfo.cpp)
 
 include_directories(${OPENSSL_INCLUDE_DIRS})
 set(OPENSSL_USE_STATIC_LIBS TRUE)

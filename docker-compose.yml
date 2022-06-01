@@ -1,0 +1,79 @@
+version: '3.8'
+
+networks:
+  extranet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.2.0/24
+          gateway: 10.0.2.100 # Host IP Address in extranet
+    driver_opts:
+      "com.docker.network.bridge.name": miniVPNExtranet
+
+  intranet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.60.0/24
+          gateway: 192.168.60.100 # Host IP Address in intranet make sure to edit gateway in telnet server
+    driver_opts:
+      "com.docker.network.bridge.name": miniVPNIntranet
+
+services:
+  telnet-server:
+    build:
+      context: .
+      dockerfile: ./docker/telnetServer/Dockerfile
+    stdin_open: true
+    tty: true
+    privileged: true
+    entrypoint: ["./entrypoint.sh"]
+    networks:
+      intranet:
+        ipv4_address: 192.168.60.101
+  tls-server:
+    build:
+      context: .
+      dockerfile: ./docker/tlsServer/Dockerfile
+    stdin_open: true
+    tty: true
+    privileged: true
+    entrypoint: ["sh"]
+    networks:
+      intranet:
+        ipv4_address: 192.168.60.1
+      extranet:
+        ipv4_address: 10.0.2.8
+  tls-client1:
+    build:
+      context: .
+      dockerfile: ./docker/client/Dockerfile
+    stdin_open: true
+    tty: true
+    privileged: true
+    entrypoint: [ "sh" ]
+    networks:
+      extranet:
+        ipv4_address: 10.0.2.10
+  tls-client2:
+    build:
+      context: .
+      dockerfile: ./docker/client/Dockerfile
+    stdin_open: true
+    tty: true
+    privileged: true
+    entrypoint: [ "sh" ]
+    networks:
+      extranet:
+        ipv4_address: 10.0.2.11
+  tls-client-expired:
+    build:
+      context: .
+      dockerfile: ./docker/expiredClient/Dockerfile
+    stdin_open: true
+    tty: true
+    privileged: true
+    entrypoint: [ "sh" ]
+    networks:
+      extranet:
+        ipv4_address: 10.0.2.12
