@@ -13,37 +13,49 @@
 
 ### 项目依赖与编译环境
 
-1. openssl-1.1.1f (包括libssl-dev)
-2. CMAKE >= 3.16.3
+1. openssl-1.1.1f , libssl-dev-1.1.1f
+2. cmake >= 3.16.3
 3. docker-compose >= 1.25.0
-4. 已在Ubuntu 20.04LTS测试可成功运行。
+4. 已在 `Ubuntu 20.04LTS` 下完成测试。
+5. Docker 使用镜像 `Ubuntu 21.10`
 
 ```shell
-sudo apt update && sudo apt install openssl cmake libssl-dev docker-compose git
+sudo apt update && sudo apt install openssl cmake libssl-dev docker-compose git build-essential
 git clone https://github.com/6QHTSK/HUST-miniVPN
 cd HUST-miniVPN
-make all
-docker-compose up -d
+systemctl start docker
+sudo make all
+sudo docker-compose up -d
+```
+
+### 访问SHELL
+
+```shell
+sudo docker-compose exec tls-server sh
+sudo docker-compose exec tls-client1 sh
+sudo docker-compose exec tls-client2 sh
+sudo docker-compose exec tls-client-expired sh
+sudo docker-compose exec telnet-server sh
 ```
 
 ### 简便指令
 
 ```shell
-sh ./cmd/start-server.sh # 启动TLS服务器
-sh ./cmd/start-client.sh <1/2/ex> # 启动TLS客户端 <客户端1,客户端2,已过期客户端>
-sh ./cmd/telnet.sh <1/2> # telnet连接内网主机 <客户端1,客户端2>
+sudo sh ./cmd/start-server.sh # 启动TLS服务器
+sudo sh ./cmd/start-client.sh <1/2/ex> # 启动TLS客户端 <客户端1,客户端2,已过期客户端>
+sudo sh ./cmd/telnet.sh <1/2> # telnet连接内网主机 <客户端1,客户端2>
 ```
 
 例如 启动服务端、一号客户端，一号客户端连接内网telnet服务器
 ```shell
-sh ./cmd/start-server.sh # 启动TLS服务器
-sh ./cmd/start-client.sh 1 # 启动1号TLS客户端
-sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机 
+sudo sh ./cmd/start-server.sh # 启动TLS服务器
+sudo sh ./cmd/start-client.sh 1 # 启动1号TLS客户端
+sudo sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机 
 ```
 
 ## 网络结构
 
-### extranet (10.0.2.0/24)
+### extranet `10.0.2.0/24`
 
 | 容器名                | IP地址       |
 |--------------------|------------|
@@ -53,7 +65,7 @@ sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机
 | tls-client-expired | 10.0.2.12  |
 | host               | 10.0.2.100 |
 
-### intranet (192.168.60.0/24)
+### intranet `192.168.60.0/24`
 
 | 容器名                | IP地址           |
 |--------------------|----------------|
@@ -63,11 +75,12 @@ sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机
 
 ## Tip & WIP
 
-1. TLS 服务端运行在55555端口，不可更改
+1. TLS 服务端运行在`55555`端口，不可更改
 2. 客户读暂未支持证书验证错误原因反馈，但其可知晓其拥有的证书错误
-3. 虚拟地址网段为192.168.53.0/24,暂不可更改
-4. Telnet/TLS服务器使用的用户名与密码 user:test; passwd:123456
-5. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
+3. 虚拟地址网段为`192.168.53.0/24`,暂不可更改
+4. Telnet/TLS服务器使用的用户名与密码 user:`test`; passwd:`123456`
+5. 如果$USER在`docker`组内，前文中的sudo可删去
+6. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
 
 ## LICENSE
 
