@@ -10,5 +10,5 @@ RUN apt-get install -y telnet net-tools
 COPY ./cert/ca.crt /opt/tlsClient/cert/
 COPY ./cert/client.key /opt/tlsClient/cert/
 COPY ./cert/expired_client.crt /opt/tlsClient/cert/client.crt
-COPY ./cert/tlsclient /opt/tlsClient/
+COPY ./release/tlsclient /opt/tlsClient/
 COPY ./lib/ /opt/tlsClient/lib/

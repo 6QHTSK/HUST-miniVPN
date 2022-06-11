@@ -13,9 +13,13 @@
 
 ### 项目依赖与编译环境
 
-1. 使用openssl-1.1.1库。
-2. 使用cmake生成可执行文件
-3. 使用了docker和docker-compose
+1. openssl-1.1.1f (包括libssl-dev)
+2. CMAKE >= 3.7.4
+3. docker-compose >= 1.25.0
+
+```shell
+sudo apt install openssl cmake libssl-dev docker-compose 
+```
 
 ### 编译项目
 ```shell
