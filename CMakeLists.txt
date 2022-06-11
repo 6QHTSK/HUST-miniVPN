@@ -1,14 +1,10 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.16.3)
 project(miniVPN)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_RPATH lib)
 
 find_package(OpenSSL REQUIRED)
-#if(OPENSSL_FOUND)
-#    include_directories(${OPENSSL_INCLUDE_DIRS})
-#    message(STATUS "OpenSSL Found!")
-#endif()
 
 add_executable(tlsclient tlsclient.cpp src/Client.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Client/SSLClient.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)
 add_executable(tlsserver tlsserver.cpp src/Server.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Server/SSLServer.cpp src/Epoll/Epoll.cpp src/Model/Packet.h src/Server/VirtualAddress.cpp src/Server/InterfaceInfo.cpp)

@@ -1,2 +1,2 @@
 #!/bin/sh
-docker exec -it minivpn-tls-server-1 ./tlsserver
+docker-compose exec tls-server-1 ./tlsserver

@@ -14,28 +14,31 @@
 ### 项目依赖与编译环境
 
 1. openssl-1.1.1f (包括libssl-dev)
-2. CMAKE >= 3.7.4
+2. CMAKE >= 3.16.3
 3. docker-compose >= 1.25.0
+4. 已在Ubuntu 20.04LTS测试可成功运行。
 
 ```shell
-sudo apt install openssl cmake libssl-dev docker-compose 
-```
-
-### 编译项目
-```shell
+sudo apt update && sudo apt install openssl cmake libssl-dev docker-compose git
+git clone https://github.com/6QHTSK/HUST-miniVPN
+cd HUST-miniVPN
 make all
-```
-### 运行项目
-```shell
-docker compose up -d
+docker-compose up -d
 ```
 
 ### 简便指令
 
 ```shell
 sh ./cmd/start-server.sh # 启动TLS服务器
-sh ./cmd/start-client.sh (1/2/ex) # 启动TLS客户端 （客户端1,客户端2,已过期客户端）
-sh ./cmd/telnet.sh (1/2) # telnet连接内网主机
+sh ./cmd/start-client.sh <1/2/ex> # 启动TLS客户端 <客户端1,客户端2,已过期客户端>
+sh ./cmd/telnet.sh <1/2> # telnet连接内网主机 <客户端1,客户端2>
+```
+
+例如 启动服务端、一号客户端，一号客户端连接内网telnet服务器
+```shell
+sh ./cmd/start-server.sh # 启动TLS服务器
+sh ./cmd/start-client.sh 1 # 启动1号TLS客户端
+sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机 
 ```
 
 ## 网络结构
@@ -63,7 +66,8 @@ sh ./cmd/telnet.sh (1/2) # telnet连接内网主机
 1. TLS 服务端运行在55555端口，不可更改
 2. 客户读暂未支持证书验证错误原因反馈，但其可知晓其拥有的证书错误
 3. 虚拟地址网段为192.168.53.0/24,暂不可更改
-4. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
+4. Telnet/TLS服务器使用的用户名与密码 user:test; passwd:123456
+5. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
 
 ## LICENSE
 
