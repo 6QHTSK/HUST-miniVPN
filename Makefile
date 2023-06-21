@@ -1,9 +1,8 @@
 all:
-	mkdir -p release
-	cd release && cmake .. && make
-	cd cert && make cert
+	cd app && make all
 	docker-compose build
+	docker-compose up -d
 clean:
-	docker-compose down -v --rmi all --remove-orphans
+	cd app && make clean
 	rm -rf release
-	cd cert && make clean
+	docker-compose down -v --rmi all --remove-orphans

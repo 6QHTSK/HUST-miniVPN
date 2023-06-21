@@ -4,8 +4,9 @@
 #include "src/Server.h"
 
 using namespace std;
-int main(){
+
+int main() {
     Server tlsServer;
-    tlsServer.Init(55555);
+    tlsServer.Init(PORT);
     tlsServer.Listen();
 }

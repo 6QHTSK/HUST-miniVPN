@@ -4,6 +4,8 @@ project(miniVPN)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_RPATH lib)
 
+add_definitions(-DPORT=2333)
+
 find_package(OpenSSL REQUIRED)
 
 add_executable(tlsclient tlsclient.cpp src/Client.cpp src/Tun/Tun.cpp src/Tun/TunController.cpp src/Client/SSLClient.cpp src/Epoll/Epoll.cpp src/Model/Packet.h)

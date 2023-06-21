@@ -24,6 +24,30 @@ int SSLClient::Fd() const {
     return sockfd;
 }
 
+int verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx)
+{
+	char buf[300];
+
+	X509 *cert = X509_STORE_CTX_get_current_cert(x509_ctx);
+
+	X509_NAME_oneline(X509_get_subject_name(cert), buf, 300);
+	printf("subject= %s\n", buf);
+
+	if (preverify_ok == 1) {
+		printf("Verification passed.\n");
+	} else {
+		int err = X509_STORE_CTX_get_error(x509_ctx);
+
+		if (err == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
+			printf("Ignore verification result: %s.\n", X509_verify_cert_error_string(err));
+			return 1;
+		}
+
+		printf("Verification failed: %s.\n", X509_verify_cert_error_string(err));
+	}
+	return preverify_ok;
+}
+
 auto initSSLCtx(){
     // Step 0: OpenSSL library initialization
     // This step is no longer needed as of version 1.1.0.
@@ -34,7 +58,7 @@ auto initSSLCtx(){
     auto meth = SSLv23_client_method();
     auto ctx = SSL_CTX_new(meth);
 
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, verify_callback);
     // 加载CA证书
     if(SSL_CTX_load_verify_locations(ctx,CACERT, nullptr) != 1){
         ERR_print_errors_fp(stderr);

@@ -4,11 +4,10 @@
 #include <termios.h>
 #include "src/Client.h"
 
-void SetStdinEcho(bool enable = true)
-{
+void SetStdinEcho(bool enable = true) {
     struct termios tty{};
     tcgetattr(STDIN_FILENO, &tty);
-    if( !enable )
+    if (!enable)
         tty.c_lflag &= ~ECHO;
     else
         tty.c_lflag |= ECHO;
@@ -17,19 +16,20 @@ void SetStdinEcho(bool enable = true)
 }
 
 using namespace std;
-int main(int argc, char *argv[]){
-    if(argc == 2){
+
+int main(int argc, char *argv[]) {
+    if (argc == 2) {
         Client tlsClient;
-        tlsClient.Init(argv[1], 55555);
+        tlsClient.Init(argv[1], PORT);
         printf("用户名:");
         char username[64];
-        scanf("%63s",username);
+        scanf("%63s", username);
         printf("密码:");
         SetStdinEcho(false);
         char password[64];
-        scanf("%63s",password);
+        scanf("%63s", password);
         SetStdinEcho(true);
-        if(tlsClient.Verify((const char *) username, (const char *) password)){
+        if (tlsClient.Verify((const char *) username, (const char *) password)) {
             tlsClient.Listen();
         }
 
