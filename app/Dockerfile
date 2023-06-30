@@ -14,6 +14,8 @@ COPY . /app
 # 生成app
 RUN mkdir -p release && cd release && cmake .. && make
 
+RUN rm -rf /app/release/*cmake* /app/release/*Makefile* /app/release/*CMake*
+
 # 生成证书
 RUN cd cert && make cert
 
