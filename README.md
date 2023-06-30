@@ -23,6 +23,7 @@ git clone https://github.com/6QHTSK/HUST-miniVPN
 cd HUST-miniVPN
 systemctl start docker
 sudo make
+sudo docker compose up -d
 ```
 
 ### 访问SHELL

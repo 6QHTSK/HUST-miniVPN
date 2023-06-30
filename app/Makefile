@@ -1,6 +1,7 @@
 all:
-	docker build -t vpn .
-	docker run --name vpn vpn
-	docker cp vpn:/app/release ..
-clean:
-	if docker ps -a | grep -q vpn; then docker stop vpn && docker rm vpn && docker rmi vpn; fi
+	docker build -t vpn-app .
+	docker run --name vpn-app vpn-app
+	docker cp vpn-app:/app/release ..
+	docker stop vpn-app
+	docker rm vpn-app
+	docker rmi vpn-app
