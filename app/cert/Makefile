@@ -5,11 +5,11 @@ server.key:
 client.key:
 	openssl genrsa -out client.key 2048
 server.csr: server.key
-	openssl req -new -key server.key -out server.csr -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=xhz-server/emailAddress=xhzq233@qq.com"
+	openssl req -new -key server.key -out server.csr -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=<name>/emailAddress=<email>"
 client.csr: client.key
-	openssl req -new -key client.key -out client.csr -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=xhz-client/emailAddress=xhzq233@qq.com"
+	openssl req -new -key client.key -out client.csr -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=<name>/emailAddress=<email>"
 ca.crt: ca.key
-	openssl req -x509 -new -nodes -sha512 -key ca.key -out ca.crt -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=xhz-ca/emailAddress=xhzq233@qq.com"
+	openssl req -x509 -new -nodes -sha512 -key ca.key -out ca.crt -subj "/C=CN/ST=Hubei/L=Wuhan/O=HUST/OU=CSE/CN=<name>/emailAddress=<email>"
 	echo "1665" > ca.srl
 server.crt: ca.crt server.csr
 	openssl x509 -req -CA ca.crt -CAkey ca.key -in server.csr -out server.crt
