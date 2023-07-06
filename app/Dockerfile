@@ -1,15 +1,17 @@
 FROM ubuntu:latest
-LABEL authors="xhz"
-
-RUN apt-get clean && apt-get update --allow-insecure-repositories
-
-RUN apt-get install -y cmake gcc g++ libssl-dev --allow-unauthenticated
-
-RUN export OPENSSL_ROOT_DIR=/usr/include/openssl
 
 WORKDIR /app
 
 COPY . /app
+
+RUN bash ./get_source.sh
+
+RUN apt-get clean && \
+    apt-get update --allow-insecure-repositories
+
+RUN apt-get install -y cmake gcc g++ libssl-dev --allow-unauthenticated
+
+RUN export OPENSSL_ROOT_DIR=/usr/include/openssl
 
 # 生成app
 RUN mkdir -p release && cd release && cmake .. && make
