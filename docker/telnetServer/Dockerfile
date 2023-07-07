@@ -1,8 +1,14 @@
-FROM ubuntu:impish
-MAINTAINER 6QHTSK "psk2019@qq.com"
+FROM ubuntu:latest
+
 WORKDIR /opt
 
-RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && apt-get clean && apt-get update --allow-insecure-repositories
+COPY ./app/get_source.sh ./get_source.sh
+
+RUN bash ./get_source.sh
+
+RUN apt-get clean && \
+    apt-get update --allow-insecure-repositories
+
 RUN apt-get install -y openbsd-inetd telnetd net-tools telnet --allow-unauthenticated
 RUN useradd test && echo 'test:123456' | chpasswd
 

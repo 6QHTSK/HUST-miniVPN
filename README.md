@@ -7,25 +7,24 @@
 1. 双重认证，在验证SSL证书基础上拥有密码验证。
 2. 开箱即用，自动进行设备的启动，客户端无需配置路径；自动代理内网网段，客户端无需配置路由。
 3. 友好的提示，服务端可以显示当前连接日志、流量，以及可供连接的IP。
-4. 快速的实验环境搭建，只需`docker compose up -d`即可搭建实验环境
+4. 快速的实验环境搭建，只需`make`即可搭建实验环境
+5. 自主选择换源，在/app/get_source.sh中可自主选择国内源或更改为国外源
 
 ## 编译运行
 
 ### 项目依赖与编译环境
 
-1. openssl-1.1.1f , libssl-dev-1.1.1f
-2. cmake >= 3.16.3
-3. docker-compose >= 1.25.0
-4. 已在 `Ubuntu 20.04LTS` 下完成测试。
-5. Docker 使用镜像 `Ubuntu 21.10`
+1. docker-compose >= 1.25.0
+2. 已在 `Ubuntu 20.04LTS`, `macOS 13.4.1` 下完成测试。
+3. Docker 使用镜像 `Ubuntu latest`
 
 ```shell
-sudo apt update && sudo apt install openssl cmake libssl-dev docker-compose git build-essential
+sudo apt update && sudo apt install docker-compose git build-essential
 git clone https://github.com/6QHTSK/HUST-miniVPN
 cd HUST-miniVPN
 systemctl start docker
-sudo make all
-sudo docker-compose up -d
+sudo make
+sudo docker compose up -d
 ```
 
 ### 访问SHELL
@@ -53,6 +52,10 @@ sudo sh ./cmd/start-client.sh 1 # 启动1号TLS客户端
 sudo sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机 
 ```
 
+### 更改运行端口
+
+通过更改/app/CMakelists.txt中`add_definitions(-DPORT=<YOUR_PORT>)`的`PORT`字段来更改服务器与客户端运行端口
+
 ## 网络结构
 
 ### extranet `10.0.2.0/24`
@@ -75,12 +78,11 @@ sudo sh ./cmd/telnet.sh 1 # 1号客户端telnet连接内网主机
 
 ## Tip & WIP
 
-1. TLS 服务端运行在`55555`端口，不可更改
-2. 客户读暂未支持证书验证错误原因反馈，但其可知晓其拥有的证书错误
-3. 虚拟地址网段为`192.168.53.0/24`,暂不可更改
-4. Telnet/TLS服务器使用的用户名与密码 user:`test`; passwd:`123456`
-5. 如果$USER在`docker`组内，前文中的sudo可删去
-6. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
+1. 客户读暂未支持证书验证错误原因反馈，但其可知晓其拥有的证书错误
+2. 虚拟地址网段为`192.168.53.0/24`,暂不可更改
+3. Telnet/TLS服务器使用的用户名与密码 user:`test`; passwd:`123456`
+4. 如果$USER在`docker`组内，前文中的sudo可删去
+5. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
 
 ## LICENSE
 
